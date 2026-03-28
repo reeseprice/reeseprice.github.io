@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reese — Weekly Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,600;0,900;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f0e8;--paper:#faf7f2;--ink:#1a1612;--ink2:#4a4540;--ink3:#8a837a;--rule:#d8d0c4;--accent:#c2410c;
+  --c-fixed-bg:#E6F1FB;--c-fixed-bd:#85B7EB;--c-fixed-tx:#0C447C;
+  --c-family-bg:#EAF3DE;--c-family-bd:#97C459;--c-family-tx:#27500A;
+  --c-va-bg:#FAECE7;--c-va-bd:#F0997B;--c-va-tx:#712B13;
+  --c-anduril-bg:#EEEDFE;--c-anduril-bd:#AFA9EC;--c-anduril-tx:#3C3489;
+  --c-wgu-bg:#FAEEDA;--c-wgu-bd:#FAC775;--c-wgu-tx:#633806;
+  --c-gcp-bg:#E1F5EE;--c-gcp-bd:#5DCAA5;--c-gcp-tx:#085041;
+  --c-palantir-bg:#FBEAF0;--c-palantir-bd:#ED93B1;--c-palantir-tx:#72243E;
+  --c-break-bg:#F1EFE8;--c-break-bd:#D3D1C7;--c-break-tx:#8a837a;
+  --c-vacation-bg:#F1EFE8;--c-vacation-bd:#B4B2A9;--c-vacation-tx:#444441;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Mono',monospace;min-height:100vh;padding:28px 16px 80px;}
+.wrap{max-width:1100px;margin:0 auto;}
+header{border-bottom:2px solid var(--ink);padding-bottom:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;}
+.eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px;}
+h1{font-family:'Fraunces',serif;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:900;line-height:1;}
+h1 em{font-style:italic;font-weight:300;color:var(--accent);}
+.sync-status{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink3);letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--rule);border-radius:2px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--rule);}
+.sync-dot.synced{background:#10b981;}
+.sync-dot.syncing{background:#f59e0b;animation:pulse 1s infinite;}
+.sync-dot.error{background:#ef4444;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.controls-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.week-btn{font-family:'DM Mono',monospace;font-size:11px;padding:5px 12px;border:1px solid var(--rule);background:var(--paper);color:var(--ink2);cursor:pointer;border-radius:2px;letter-spacing:0.04em;transition:all 0.15s;}
+.week-btn:hover{border-color:var(--ink3);}
+.week-btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+.week-label-txt{font-size:10px;color:var(--ink3);letter-spacing:0.06em;text-transform:uppercase;flex:1;}
+.progress-wrap{margin-bottom:16px;}
+.progress-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;}
+.progress-track{height:4px;background:var(--rule);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s ease;width:0%;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--ink2);letter-spacing:0.06em;text-transform:uppercase;}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.hint{font-size:9px;color:var(--ink3);margin-left:auto;}
+.grid-wrap{overflow-x:auto;}
+.grid{display:grid;grid-template-columns:60px repeat(7,minmax(110px,1fr));gap:2px;min-width:820px;}
+.col-header{text-align:center;font-size:11px;font-weight:500;color:var(--ink2);padding:7px 4px;background:var(--paper);border:1px solid var(--rule);letter-spacing:0.06em;text-transform:uppercase;}
+.col-header.weekend{background:var(--bg);color:var(--ink3);}
+.time-label{font-size:10px;color:var(--ink3);text-align:right;padding-right:8px;padding-top:6px;line-height:1.2;border-right:1px solid var(--rule);}
+.cell{min-height:42px;border:0.5px solid var(--rule);background:var(--paper);position:relative;cursor:pointer;transition:opacity 0.15s;overflow:hidden;}
+.cell:hover{opacity:0.82;}
+.cell.empty{background:var(--bg);cursor:default;border-color:transparent;}
+.cell.no-toggle{cursor:default;}
+.cell.done{opacity:0.4;}
+.cell-inner{padding:4px 5px 4px 20px;font-size:9px;line-height:1.3;font-weight:500;height:100%;overflow:hidden;position:relative;}
+.chk{position:absolute;left:4px;top:5px;width:11px;height:11px;border:1px solid currentColor;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;opacity:0.65;}
+.cell.done .chk::after{content:'✓';}
+.c-fixed{background:var(--c-fixed-bg);border-color:var(--c-fixed-bd);color:var(--c-fixed-tx);}
+.c-family{background:var(--c-family-bg);border-color:var(--c-family-bd);color:var(--c-family-tx);}
+.c-va{background:var(--c-va-bg);border-color:var(--c-va-bd);color:var(--c-va-tx);}
+.c-anduril{background:var(--c-anduril-bg);border-color:var(--c-anduril-bd);color:var(--c-anduril-tx);}
+.c-wgu{background:var(--c-wgu-bg);border-color:var(--c-wgu-bd);color:var(--c-wgu-tx);}
+.c-gcp{background:var(--c-gcp-bg);border-color:var(--c-gcp-bd);color:var(--c-gcp-tx);}
+.c-palantir{background:var(--c-palantir-bg);border-color:var(--c-palantir-bd);color:var(--c-palantir-tx);}
+.c-break{background:var(--c-break-bg);border-color:var(--c-break-bd);color:var(--c-break-tx);}
+.c-vacation{background:var(--c-vacation-bg);border-color:var(--c-vacation-bd);color:var(--c-vacation-tx);}
+.tooltip{position:fixed;background:var(--paper);border:1px solid var(--ink);padding:10px 14px;font-size:12px;max-width:260px;z-index:999;pointer-events:none;display:none;box-shadow:2px 2px 0 var(--ink);}
+.tt-title{font-weight:500;margin-bottom:4px;color:var(--ink);font-size:12px;}
+.tt-desc{color:var(--ink2);font-size:11px;line-height:1.5;}
+.reset-btn{font-family:'DM Mono',monospace;font-size:10px;padding:5px 14px;border:1px solid var(--rule);background:transparent;color:var(--ink3);cursor:pointer;border-radius:2px;letter-spacing:0.06em;text-transform:uppercase;margin-top:16px;transition:all 0.2s;}
+.reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">Reese · Master Schedule · Apr–May 2026</div>
+    <h1>Weekly <em>Schedule</em></h1>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+    <div class="sync-status" id="sync-status">
+      <div class="sync-dot syncing" id="sync-dot"></div>
+      <span id="sync-text">Connecting...</span>
+    </div>
+  </div>
+</header>
+
+<div class="controls-row">
+  <div id="week-nav"></div>
+  <span class="week-label-txt" id="week-label-txt"></span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-meta">
+    <span id="prog-text">0 of 0 tasks completed this week</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-fixed-bg);border:1px solid var(--c-fixed-bd)"></div>Fixed/School</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-family-bg);border:1px solid var(--c-family-bd)"></div>Family</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-va-bg);border:1px solid var(--c-va-bd)"></div>VA Appt</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-anduril-bg);border:1px solid var(--c-anduril-bd)"></div>Anduril Prep</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-wgu-bg);border:1px solid var(--c-wgu-bd)"></div>WGU Study</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-gcp-bg);border:1px solid var(--c-gcp-bd)"></div>GCP/Terraform</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-palantir-bg);border:1px solid var(--c-palantir-bd)"></div>Palantir Prep</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--c-break-bg);border:1px solid var(--c-break-bd)"></div>Break/Rest</div>
+  <span class="hint">Click any task to mark complete · syncs across all devices</span>
+</div>
+
+<div class="grid-wrap"><div class="grid" id="schedule-grid"></div></div>
+<button class="reset-btn" onclick="resetWeek()">↺ Reset this week</button>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div class="tt-desc" id="tt-desc"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDjfRzuRxxoxtRJdQzklKq0l-zrFeQ19GI",
+  authDomain: "cp-training-hub.firebaseapp.com",
+  projectId: "cp-training-hub",
+  storageBucket: "cp-training-hub.firebasestorage.app",
+  messagingSenderId: "665937146753",
+  appId: "1:665937146753:web:f8b48ffe1ab76fc76aae80"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const SCHEDULE_DOC = doc(db, "progress", "schedule");
+
+const HOURS = [];
+for(let h=7;h<=21;h++) HOURS.push(h);
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WEEK_LABELS = [
+  'Mar 29 – Apr 4 (Vacation → wind-down)',
+  'Apr 5–11 (Anduril interview week)',
+  'Apr 12–18',
+  'Apr 19–25',
+  'Apr 26 – May 2 (Palantir Fellowship begins)',
+];
+
+let remoteState = {};
+let currentWeek = 0;
+let pendingWrite = null;
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'sync-dot ' + status;
+  const labels = { synced:'Synced', syncing:'Syncing...', error:'Offline — saved locally' };
+  txt.textContent = labels[status] || status;
+}
+
+function doneKey(wi,di,h){ return `w${wi}_d${di}_h${h}`; }
+function isDone(wi,di,h){ return !!remoteState[doneKey(wi,di,h)]; }
+
+async function persistState() {
+  setSyncStatus('syncing');
+  if(pendingWrite) clearTimeout(pendingWrite);
+  pendingWrite = setTimeout(async () => {
+    try {
+      await setDoc(SCHEDULE_DOC, remoteState);
+      setSyncStatus('synced');
+    } catch(e) {
+      setSyncStatus('error');
+      try { localStorage.setItem('schedule_fallback', JSON.stringify(remoteState)); } catch(e2){}
+    }
+  }, 600);
+}
+
+function toggleDone(wi,di,h) {
+  const k = doneKey(wi,di,h);
+  remoteState[k] = !remoteState[k];
+  persistState();
+  updateProgress(wi, buildWeek(wi));
+  const cellId = `cell-${wi}-${di}-${h}`;
+  const cell = document.getElementById(cellId);
+  if(cell) cell.classList.toggle('done', !!remoteState[k]);
+}
+
+function add(days,d,h,label,color,desc,span){
+  days[d][h]={label,color,desc,span:span||1};
+  if(span>1) for(let i=1;i<span;i++) days[d][h+i]={skip:true,rootH:h};
+}
+const isWeekend = d => d===0||d===6;
+function schoolDay(days,d){ if(!isWeekend(d)) add(days,d,8,'School drop-off','c-fixed','Drop kids at school ~8:20, home by 9 AM.',1); }
+function pickup(days,d){ if(!isWeekend(d)) add(days,d,17,'Kids pickup','c-fixed','Pick up kids at 5 PM.',1); }
+function tkd(days,d){ add(days,d,18,'Taekwondo','c-family','Kids Taekwondo drop-off/pick-up (6–7 PM).',1); }
+function lunch(days,d){ add(days,d,12,'Lunch','c-break','Lunch break — step away from the screen.',1); }
+function wkMorn(days,d){ add(days,d,7,'Sleep in + family breakfast','c-family','Weekend morning — sleep in, cook breakfast together. No tasks until 1 PM.',5); }
+const NO_TOGGLE = new Set(['c-break','c-vacation','c-family']);
+
+function buildWeek(wi){
+  const D=[{},{},{},{},{},{},{}];
+  if(wi===0){
+    wkMorn(D,0); add(D,0,13,"Father's Bday",'c-family','All-day family event.',4); add(D,0,18,'Family dinner','c-family','Dinner and family evening.',2);
+    schoolDay(D,1); lunch(D,1); pickup(D,1);
+    add(D,1,7,'Morning review','c-anduril','Plan the week. Review Linux task list: dd, WireGuard, SSH, SCP.',1);
+    add(D,1,9,'Anduril prep','c-anduril','Bootable USB: practice dd command. Verify successful boot.',2);
+    add(D,1,11,'Anduril prep','c-anduril','WireGuard VPN setup via CLI — follow official docs.',1);
+    add(D,1,13,'Anduril prep','c-anduril','SSH with private key — practice connecting to a test server.',1);
+    add(D,1,14,'WGU Python','c-wgu','WGU E010: course orientation, read syllabus, set up environment.',1);
+    add(D,1,15,'WGU Python','c-wgu','WGU E010: first Python module — variables and data types.',1);
+    add(D,1,16,'Break','c-break','Short break.',1); add(D,1,18,'Family time','c-family','Dinner and family time.',2);
+    schoolDay(D,2); lunch(D,2); pickup(D,2); tkd(D,2);
+    add(D,2,7,'Morning review','c-anduril','Quick review of WireGuard CLI notes before appointment.',1);
+    add(D,2,9,'Anduril prep','c-anduril','SCP file transfer practice — move WireGuard config between environments.',1);
+    add(D,2,10,'VA TBI Appt','c-va','VA Benefits – Traumatic Brain Injury Appointment (10–11 AM).',1);
+    add(D,2,11,'Anduril prep','c-anduril','Document all 4 tasks: dd, WireGuard, SSH, SCP. Write steps from memory.',1);
+    add(D,2,13,'Anduril confirm','c-fixed','Anduril Interview Confirmation call (1–1:30 PM).',1);
+    add(D,2,14,'WGU Python','c-wgu','WGU E010: control flow and functions.',1);
+    add(D,2,15,'Palantir prep','c-palantir','Palantir ATF: data analytics — mean, median, aggregation, joins.',1);
+    add(D,2,16,'Break','c-break','Short break.',1); add(D,2,19,'Wind-down','c-vacation','Rest.',1);
+    schoolDay(D,3); pickup(D,3);
+    add(D,3,7,'Light review','c-anduril','Review Anduril notes. Focus on weak spots.',1);
+    add(D,3,9,'Anduril prep','c-anduril','Full end-to-end dry run of all 4 tasks. Time yourself.',1);
+    add(D,3,10,'VA Dental Appt','c-va','VA Benefits – Dental Specialty Appointment (10–11 AM).',1);
+    add(D,3,11,'VA X-Rays','c-va','VA Benefits – X-Rays Appointment (11:30 AM–12:30 PM).',1);
+    add(D,3,13,'Rest / recovery','c-vacation','Light afternoon after appointments.',2);
+    add(D,3,15,'WGU Python','c-wgu','WGU E010: light reading or video only.',1);
+    add(D,3,16,'Break','c-break','Short break.',1); add(D,3,18,'Family time','c-family','Dinner and family time.',2);
+    schoolDay(D,4); lunch(D,4); pickup(D,4); tkd(D,4);
+    add(D,4,7,'Rest','c-vacation','Vacation wind-down.',1);
+    add(D,4,9,'Light Anduril review','c-anduril','Optional: revisit any weak area from interview prep.',1);
+    add(D,4,10,'WGU Python','c-wgu','WGU E010: practice problems.',1);
+    add(D,4,11,'Rest','c-vacation','Relax.',1); add(D,4,13,'Rest','c-vacation','Free afternoon.',3); add(D,4,19,'Wind-down','c-vacation','Rest.',1);
+    schoolDay(D,5); pickup(D,5);
+    add(D,5,7,'Rest','c-vacation','Vacation wind-down.',1);
+    add(D,5,9,'Palantir prep','c-palantir','Palantir ATF: Python basics — loops, lists, functions.',1);
+    add(D,5,10,'WGU Python','c-wgu','WGU E010: any pending modules.',1);
+    add(D,5,11,'Rest','c-vacation','Free time.',1); add(D,5,12,'Lunch','c-break','Lunch.',1);
+    add(D,5,13,'Rest','c-vacation','Afternoon off.',3);
+    add(D,5,16,'Vacation ends 4:30','c-fixed','Vacation ends — prep mindset for next week.',1);
+    add(D,5,18,'Family time','c-family','Weekend eve — family.',2);
+    wkMorn(D,6);
+    add(D,6,13,'Palantir prep','c-palantir','Palantir ATF: data analytics — datasets, rows/columns, basic stats.',2);
+    add(D,6,15,'WGU Python','c-wgu','WGU E010: weekend study sprint.',2);
+    add(D,6,17,'Break','c-break','Short break.',1); add(D,6,18,'Family time','c-family','Evening with family.',2);
+  }
+  if(wi===1){
+    wkMorn(D,0);
+    add(D,0,13,'Anduril final prep','c-anduril','Full review of all 4 tasks. Write steps from memory, no notes.',2);
+    add(D,0,15,'Mock run','c-anduril','Timed end-to-end simulation of all interview tasks.',1);
+    add(D,0,16,'WGU Python','c-wgu','WGU E010: keep momentum.',1);
+    add(D,0,17,'Palantir prep','c-palantir','Palantir ATF: aggregation, filtering, groupby logic.',1);
+    add(D,0,18,'Family time','c-family','Evening with family.',2);
+    schoolDay(D,1); lunch(D,1); pickup(D,1);
+    add(D,1,7,'Final interview review','c-anduril','Confidence review. Skim all notes. No new material.',1);
+    add(D,1,9,'Anduril dry run','c-anduril','Final timed dry run. Speed and accuracy.',2);
+    add(D,1,11,'Light prep','c-anduril','Rest brain. Review edge cases only.',1);
+    add(D,1,13,'WGU Python','c-wgu','WGU E010: active study sprint.',2);
+    add(D,1,15,'WGU Capstone','c-wgu','WGU E029: review capstone requirements.',1);
+    add(D,1,16,'Break','c-break','Break.',1); add(D,1,18,'Family time','c-family','Dinner and wind-down.',2);
+    schoolDay(D,2); pickup(D,2); tkd(D,2);
+    add(D,2,7,'Pre-interview calm','c-anduril','Light review only. Trust your prep.',1);
+    add(D,2,9,'ANDURIL INTERVIEW','c-anduril','Interview window — exact time TBD. Be ready from 9 AM.',3);
+    add(D,2,12,'Lunch + debrief','c-break','Write down everything you remember from the interview.',1);
+    add(D,2,13,'WGU Python','c-wgu','WGU E010: resume normal schedule.',2);
+    add(D,2,15,'GCP','c-gcp','GCP: Cloud Storage and GCS buckets intro.',1);
+    add(D,2,16,'Break','c-break','Break.',1); add(D,2,19,'Wind-down','c-break','Rest. You did the work.',1);
+    schoolDay(D,3); lunch(D,3); pickup(D,3);
+    add(D,3,7,'Morning review','c-gcp',"GCP: VPCs and DMZ VPC pattern — O'Reilly reading.",1);
+    add(D,3,9,'WGU Python','c-wgu','WGU E010: study sprint — aim for 2 modules.',2);
+    add(D,3,11,'GCP','c-gcp','GCP: Load Balancers — theory + hands-on lab.',1);
+    add(D,3,13,'WGU Capstone','c-wgu','WGU E029: outline capstone project structure.',2);
+    add(D,3,15,'Palantir prep','c-palantir','Palantir ATF: pandas intro, read a CSV, describe() function.',1);
+    add(D,3,16,'Break','c-break','Break.',1); add(D,3,18,'Family time','c-family','Dinner and family time.',2);
+    schoolDay(D,4); lunch(D,4); pickup(D,4); tkd(D,4);
+    add(D,4,7,'Morning review','c-wgu',"WGU Python: review previous day's work.",1);
+    add(D,4,9,'WGU Python','c-wgu','WGU E010: study sprint.',2);
+    add(D,4,11,'Terraform','c-gcp','Terraform: intro concepts, HCL syntax, write first config.',1);
+    add(D,4,13,'WGU Capstone','c-wgu','WGU E029: begin drafting capstone document.',2);
+    add(D,4,15,'Palantir prep','c-palantir','Palantir ATF: KPIs, dashboards, basic SQL logic.',1);
+    add(D,4,16,'Break','c-break','Break.',1); add(D,4,19,'Wind-down','c-break','Rest.',1);
+    schoolDay(D,5); lunch(D,5); pickup(D,5);
+    add(D,5,7,'Weekly review','c-wgu','Review week progress. Adjust goals.',1);
+    add(D,5,9,'WGU Python','c-wgu','WGU E010: study sprint.',2);
+    add(D,5,11,'WGU Capstone','c-wgu','WGU E029: capstone work.',1);
+    add(D,5,13,'GCP/Terraform','c-gcp',"Terraform: provision a GCP resource. O'Reilly lab.",2);
+    add(D,5,15,'Git','c-gcp','Git: branching, PR workflow. Chrome app side project.',1);
+    add(D,5,16,'Break','c-break','Break.',1); add(D,5,18,'Family time','c-family','Weekend kickoff.',2);
+    wkMorn(D,6);
+    add(D,6,13,'WGU Python','c-wgu','WGU E010: weekend sprint.',2);
+    add(D,6,15,'WGU Capstone','c-wgu','WGU E029: capstone work.',1);
+    add(D,6,16,'Palantir prep','c-palantir','Palantir ATF: write functions, work with lists and dicts.',1);
+    add(D,6,17,'Break','c-break','Short break.',1); add(D,6,18,'Family time','c-family','Evening with family.',2);
+  }
+  if(wi===2){
+    for(let d=0;d<7;d++){
+      if(d===0){ wkMorn(D,d); add(D,d,13,'WGU Python','c-wgu','WGU E010: Sunday study block.',2); add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: filtering data, sorting, working with nulls.',1); add(D,d,16,'GCP','c-gcp','GCP: Terraform modules and variables.',1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      if(d===6){ wkMorn(D,d); add(D,d,13,'WGU Capstone','c-wgu','WGU E029: capstone work.',2); add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: write a small script to analyze a dataset.',1); add(D,d,16,'GCP','c-gcp',"GCP: review week's learning.",1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      schoolDay(D,d); lunch(D,d); pickup(D,d);
+      add(D,d,7,'Morning review','c-wgu',"Review yesterday's WGU progress.",1);
+      add(D,d,9,'WGU Python','c-wgu','WGU E010: focused study sprint.',2);
+      add(D,d,11,'WGU Capstone','c-wgu','WGU E029: capstone work block.',1);
+      add(D,d,13,'GCP/Terraform','c-gcp',"GCP or Terraform — alternate daily. O'Reilly labs.",2);
+      add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: rotate Python exercises and data analytics concepts.',1);
+      add(D,d,16,'Break','c-break','Break.',1);
+      if(d===2||d===4){ tkd(D,d); add(D,d,19,'Wind-down','c-break','Rest.',1); }
+      else add(D,d,18,'Family time','c-family','Dinner and family time.',2);
+    }
+  }
+  if(wi===3){
+    for(let d=0;d<7;d++){
+      if(d===0){ wkMorn(D,d); add(D,d,13,'WGU Python','c-wgu','WGU E010: push hard — end of April deadline.',2); add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: descriptive stats, distributions, good charts.',1); add(D,d,16,'GCP','c-gcp','Terraform: state management and remote backends.',1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      if(d===6){ wkMorn(D,d); add(D,d,13,'WGU final push','c-wgu','WGU: final submission prep for both courses.',2); add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: OOP basics, classes, methods, software dev principles.',1); add(D,d,16,'GCP review','c-gcp',"GCP: consolidate week's learning.",1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      schoolDay(D,d); lunch(D,d); pickup(D,d);
+      add(D,d,7,'Morning review','c-wgu','Priority: WGU deadline end of April.',1);
+      add(D,d,9,'WGU Python','c-wgu','WGU E010: final modules — deadline end of April.',2);
+      add(D,d,11,'WGU Capstone','c-wgu','WGU E029: capstone final draft.',1);
+      add(D,d,13,'WGU Capstone','c-wgu','WGU E029: revise and finalize.',1);
+      add(D,d,14,'GCP','c-gcp','GCP: VPC peering and NCC lab.',1);
+      add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: write scripts that read, filter, and summarize data.',1);
+      add(D,d,16,'Break','c-break','Break.',1);
+      if(d===2||d===4){ tkd(D,d); add(D,d,19,'Wind-down','c-break','Rest.',1); }
+      else add(D,d,18,'Family time','c-family','Dinner and family time.',2);
+    }
+  }
+  if(wi===4){
+    for(let d=0;d<7;d++){
+      if(d===0){ wkMorn(D,d); add(D,d,13,'GCP/Terraform','c-gcp','GCP review and Terraform practice.',2); add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: final prep — data analytics + Python review.',1); add(D,d,16,'WGU cleanup','c-wgu','Any remaining WGU submission tasks.',1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      if(d===6){ wkMorn(D,d); add(D,d,13,'GCP','c-gcp','GCP: hands-on lab.',2); add(D,d,15,'Palantir review','c-palantir','Review week 1 Palantir session content.',1); add(D,d,16,'Free','c-break','Rest and recharge.',1); add(D,d,17,'Break','c-break','Short break.',1); add(D,d,18,'Family','c-family','Family evening.',2); continue; }
+      schoolDay(D,d); lunch(D,d); pickup(D,d);
+      add(D,d,7,'Morning review','c-palantir','Review previous Palantir session notes.',1);
+      add(D,d,9,'GCP/Terraform','c-gcp','GCP/Terraform structured study sprint.',2);
+      add(D,d,11,'WGU cleanup','c-wgu','Any remaining WGU tasks or final submissions.',1);
+      add(D,d,13,'GCP','c-gcp','GCP deep dive: IAM, PAM, or NCC — rotate daily.',2);
+      add(D,d,15,'Palantir prep','c-palantir','Palantir ATF: review session materials, practice Python or analytics.',1);
+      add(D,d,16,'Break','c-break','Break.',1);
+      if(d===2||d===4){ tkd(D,d); add(D,d,19,'PALANTIR SESSION','c-palantir','Palantir American Tech Fellowship — live session (7–8:30 PM).',1); }
+      else add(D,d,18,'Family time','c-family','Dinner and family time.',2);
+    }
+  }
+  return D;
+}
+
+function fmtH(h){ const s=h>=12?'PM':'AM',d=h>12?h-12:(h===0?12:h); return d+':00 '+s; }
+
+function updateProgress(wi,days){
+  let total=0,done=0;
+  for(let d=0;d<7;d++) for(const h of HOURS){ const s=days[d][h]; if(s&&!s.skip&&!NO_TOGGLE.has(s.color)){ total++; if(isDone(wi,d,h)) done++; } }
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=done+' of '+total+' tasks completed this week';
+  document.getElementById('prog-pct').textContent=pct+'%';
+}
+
+function renderWeek(wi){
+  document.getElementById('week-label-txt').textContent=WEEK_LABELS[wi];
+  document.querySelectorAll('.week-btn').forEach((b,i)=>b.classList.toggle('active',i===wi));
+  const days=buildWeek(wi);
+  const grid=document.getElementById('schedule-grid');
+  grid.innerHTML='';
+  grid.appendChild(document.createElement('div'));
+  DAYS.forEach((dl,di)=>{ const h=document.createElement('div'); h.className='col-header'+(di===0||di===6?' weekend':''); h.textContent=dl; grid.appendChild(h); });
+  HOURS.forEach(h=>{
+    const tl=document.createElement('div'); tl.className='time-label'; tl.textContent=fmtH(h); grid.appendChild(tl);
+    DAYS.forEach((_,di)=>{
+      const slot=days[di][h];
+      const cell=document.createElement('div');
+      if(!slot){ cell.className='cell empty'; grid.appendChild(cell); return; }
+      if(slot.skip){ cell.style.display='none'; grid.appendChild(cell); return; }
+      const togglable=!NO_TOGGLE.has(slot.color);
+      cell.className='cell '+slot.color+(togglable?'':' no-toggle')+(isDone(wi,di,h)?' done':'');
+      cell.id=`cell-${wi}-${di}-${h}`;
+      if(slot.span&&slot.span>1){ cell.style.gridRow='span '+slot.span; cell.style.minHeight=(slot.span*42)+'px'; }
+      const inner=document.createElement('div'); inner.className='cell-inner';
+      if(togglable){ const chk=document.createElement('div'); chk.className='chk'; inner.appendChild(chk); } else { inner.style.paddingLeft='6px'; }
+      const txt=document.createElement('span'); txt.textContent=slot.label; inner.appendChild(txt);
+      cell.appendChild(inner);
+      if(togglable) cell.addEventListener('click',()=>toggleDone(wi,di,h));
+      cell.addEventListener('mouseenter',(e)=>{ document.getElementById('tt-title').textContent=slot.label+' ('+fmtH(h)+')'; document.getElementById('tt-desc').textContent=slot.desc||''; document.getElementById('tooltip').style.display='block'; posTip(e); });
+      cell.addEventListener('mousemove',posTip);
+      cell.addEventListener('mouseleave',()=>{ document.getElementById('tooltip').style.display='none'; });
+      grid.appendChild(cell);
+    });
+  });
+  updateProgress(wi,days);
+  currentWeek=wi;
+}
+
+function posTip(e){ const t=document.getElementById('tooltip'),tw=260,th=80; let x=e.clientX+14,y=e.clientY+14; if(x+tw>window.innerWidth-10)x=e.clientX-tw-14; if(y+th>window.innerHeight-10)y=e.clientY-th-14; t.style.left=x+'px'; t.style.top=y+'px'; }
+
+window.resetWeek=function(){ if(!confirm('Reset all completions for this week?')) return; const days=buildWeek(currentWeek); for(let d=0;d<7;d++) for(const h of HOURS){ const k=`w${currentWeek}_d${d}_h${h}`; delete remoteState[k]; } persistState(); renderWeek(currentWeek); };
+
+// Build nav
+const nav=document.getElementById('week-nav');
+nav.style.display='flex'; nav.style.gap='8px'; nav.style.flexWrap='wrap';
+WEEK_LABELS.forEach((l,i)=>{ const btn=document.createElement('button'); btn.className='week-btn'; btn.textContent='Week '+(i+1); btn.addEventListener('click',()=>renderWeek(i)); nav.appendChild(btn); });
+
+// Listen to Firestore in real-time
+onSnapshot(SCHEDULE_DOC, (snap) => {
+  remoteState = snap.exists() ? snap.data() : {};
+  setSyncStatus('synced');
+  renderWeek(currentWeek);
+}, (err) => {
+  setSyncStatus('error');
+  try { const fb=localStorage.getItem('schedule_fallback'); if(fb) remoteState=JSON.parse(fb); } catch(e){}
+  renderWeek(currentWeek);
+});
+
+renderWeek(0);
+</script>
+</body>
+</html>
