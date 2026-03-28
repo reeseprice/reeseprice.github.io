@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palantir ATF — Study Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #1a1a24;
+  --border: #2a2a38;
+  --border2: #3a3a50;
+  --text: #e8e6f0;
+  --text2: #9490a8;
+  --text3: #5a5670;
+  --accent: #be3aff;
+  --accent2: #7c3aed;
+  --gold: #f59e0b;
+  --teal: #06b6d4;
+  --green: #10b981;
+  --red: #ef4444;
+  --week-w: 260px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── LAYOUT ── */
+.app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--week-w);
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-head {
+  padding: 28px 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.sidebar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.sidebar-subtitle {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.p-sync-row { display:flex;align-items:center;gap:6px;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3); }
+.p-sync-dot { width:7px;height:7px;border-radius:50%;background:var(--border2); }
+.p-sync-dot.synced { background:#10b981; }
+.p-sync-dot.syncing { background:#f59e0b;animation:psync 1s infinite; }
+.p-sync-dot.error { background:#ef4444; }
+@keyframes psync { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+/* Overall progress */
+.overall-progress {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.op-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text3);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.op-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.op-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+/* Week nav */
+.week-nav { flex: 1; padding: 12px 0; }
+
+.week-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  position: relative;
+}
+.week-btn:hover { background: var(--surface2); }
+.week-btn.active { background: var(--surface2); }
+.week-btn.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.week-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  min-width: 20px;
+}
+.week-btn.active .week-num { color: var(--accent); }
+
+.week-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  line-height: 1.3;
+  flex: 1;
+}
+.week-btn.active .week-name { color: var(--text); }
+
+.week-check {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+  color: transparent;
+}
+.week-btn.week-done .week-check {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  max-width: 860px;
+}
+
+/* Hero */
+.hero {
+  padding: 48px 48px 36px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: 'ATF';
+  position: absolute;
+  right: -20px;
+  top: -20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 160px;
+  font-weight: 800;
+  color: var(--surface2);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+
+.hero-title span { color: var(--accent); }
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--text2);
+  max-width: 540px;
+  line-height: 1.7;
+}
+
+.hero-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.hero-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  color: var(--text2);
+}
+
+.hero-tag.hi { border-color: var(--accent); color: var(--accent); }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-cell {
+  padding: 20px 24px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.stat-cell:last-child { border-right: none; }
+
+.stat-n {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  display: block;
+}
+
+.stat-l {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+/* ── WEEK PANEL ── */
+.week-panel { display: none; padding: 40px 48px 60px; }
+.week-panel.active { display: block; }
+
+.wp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wp-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--surface2);
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: -8px;
+}
+
+.wp-meta { flex: 1; }
+
+.wp-track {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.wp-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.wp-hours {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.mark-done-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+.mark-done-btn:hover { border-color: var(--green); color: var(--green); }
+.mark-done-btn.done { border-color: var(--green); background: rgba(16,185,129,0.1); color: var(--green); }
+
+/* Section headers inside panel */
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Objective cards */
+.objectives { display: flex; flex-direction: column; gap: 10px; margin-bottom: 36px; }
+
+.obj-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent2);
+}
+
+.obj-icon {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.obj-text { font-size: 14px; color: var(--text2); line-height: 1.5; }
+.obj-text strong { color: var(--text); font-weight: 500; }
+
+/* Concepts grid */
+.concepts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 36px; }
+
+.concept-card {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+.concept-card:hover { border-color: var(--border2); }
+
+.concept-term {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.concept-def {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+
+.concept-tag {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  margin-bottom: 6px;
+}
+.ct-data { background: rgba(6,182,212,0.15); color: var(--teal); }
+.ct-python { background: rgba(190,58,255,0.15); color: var(--accent); }
+.ct-sql { background: rgba(245,158,11,0.15); color: var(--gold); }
+
+/* Practice block */
+.practice-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 36px;
+  overflow: hidden;
+}
+
+.practice-header {
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.practice-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.practice-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.practice-body { padding: 16px; }
+
+.practice-item {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  align-items: flex-start;
+}
+.practice-item:last-child { border-bottom: none; }
+
+.practice-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  flex-shrink: 0;
+  padding-top: 3px;
+  min-width: 20px;
+}
+
+/* Code block */
+.code-block {
+  background: #080810;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  margin-bottom: 36px;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #c8c3e0;
+  white-space: pre;
+}
+
+.code-block .c-comment { color: #4a4560; }
+.code-block .c-kw { color: var(--accent); }
+.code-block .c-fn { color: var(--teal); }
+.code-block .c-str { color: var(--gold); }
+.code-block .c-num { color: var(--green); }
+.code-block .c-var { color: #c8c3e0; }
+
+/* Resources */
+.resources { display: flex; flex-direction: column; gap: 8px; margin-bottom: 36px; }
+
+.res-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.res-item:hover { border-color: var(--border2); background: var(--surface2); }
+
+.res-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.rd-free { background: var(--green); }
+.rd-paid { background: var(--red); }
+
+.res-label { font-size: 13px; color: var(--text2); flex: 1; }
+.res-item:hover .res-label { color: var(--text); }
+
+.res-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+.rb-free { background: rgba(16,185,129,0.15); color: var(--green); }
+.rb-paid { background: rgba(239,68,68,0.15); color: var(--red); }
+
+.res-arrow { font-size: 12px; color: var(--text3); }
+
+/* Quiz */
+.quiz { margin-bottom: 36px; }
+
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.quiz-q {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+}
+.quiz-q:hover { background: var(--surface2); }
+
+.quiz-toggle { color: var(--text3); font-size: 14px; transition: transform 0.2s; flex-shrink: 0; }
+.quiz-card.open .quiz-toggle { transform: rotate(180deg); }
+
+.quiz-a {
+  display: none;
+  padding: 12px 16px 14px;
+  font-size: 13px;
+  color: var(--text2);
+  border-top: 1px solid var(--border);
+  line-height: 1.6;
+  background: rgba(190,58,255,0.04);
+}
+.quiz-card.open .quiz-a { display: block; }
+
+.quiz-a code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: var(--accent);
+}
+
+/* Flashcard note */
+.study-note {
+  padding: 14px 18px;
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 4px;
+  border-left: 3px solid var(--gold);
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 36px;
+}
+.study-note strong { color: var(--gold); font-weight: 500; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.week-panel.active { animation: fadeUp 0.25s ease; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .concepts { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .week-panel { padding: 24px; }
+  .hero { padding: 28px 24px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-head">
+    <div class="sidebar-logo">Palantir ATF</div>
+    <div class="sidebar-title">Study Guide</div>
+    <div class="sidebar-subtitle">// 6 weeks · ~42 hrs</div>
+    <div class="p-sync-row"><div class="p-sync-dot syncing" id="p-sync-dot"></div><span id="p-sync-txt">Connecting...</span></div>
+  </div>
+  <div class="overall-progress">
+    <div class="op-label">
+      <span>Overall progress</span>
+      <span id="pct-label">0%</span>
+    </div>
+    <div class="op-bar"><div class="op-fill" id="op-fill"></div></div>
+  </div>
+  <nav class="week-nav" id="week-nav"></nav>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="home-panel">
+    <div class="hero-eyebrow">American Tech Fellowship · Prep Program</div>
+    <div class="hero-title">Master the <span>two</span> things<br>Palantir is looking for.</div>
+    <div class="hero-desc">
+      The ATF program selects for people who are technologically savvy with a solid foundation in
+      <strong>data analytics</strong> and <strong>Python / software development principles</strong>.
+      This guide is your six-week path to being ready.
+    </div>
+    <div class="hero-tags">
+      <span class="hero-tag hi">Data Analytics</span>
+      <span class="hero-tag hi">Python</span>
+      <span class="hero-tag">SQL</span>
+      <span class="hero-tag">pandas</span>
+      <span class="hero-tag">OOP</span>
+      <span class="hero-tag">Clean Code</span>
+      <span class="hero-tag">Visualization</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-cell">
+      <span class="stat-n">6</span>
+      <div class="stat-l">Weeks</div>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-n">~42</span>
+      <div class="stat-l">Total Hrs</div>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-n" id="stat-done">0</span>
+      <div class="stat-l">Weeks Done</div>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-n">Apr 28</span>
+      <div class="stat-l">Fellowship Starts</div>
+    </div>
+  </div>
+
+  <!-- WEEK PANELS -->
+
+  <!-- WEEK 1 -->
+  <div class="week-panel" id="panel-1">
+    <div class="wp-header">
+      <div class="wp-num">01</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: Data Analytics</div>
+        <div class="wp-title">Fundamentals: Terminology, Datasets & Descriptive Stats</div>
+        <div class="wp-hours">~6 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(1)">Mark done</button>
+    </div>
+
+    <div class="section-label">Learning objectives</div>
+    <div class="objectives">
+      <div class="obj-card">
+        <div class="obj-icon">→</div>
+        <div class="obj-text">Define a dataset: what <strong>rows, columns, fields, and records</strong> mean and how they relate to each other</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">→</div>
+        <div class="obj-text">Calculate and interpret <strong>mean, median, mode, range, variance, and standard deviation</strong> without a calculator</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">→</div>
+        <div class="obj-text">Identify <strong>outliers</strong> and explain why they matter in analysis</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">→</div>
+        <div class="obj-text">Understand <strong>cardinality, nulls, and data types</strong> — why they affect how you work with data</div>
+      </div>
+      <div class="obj-card">
+        <div class="obj-icon">→</div>
+        <div class="obj-text">Explain the difference between <strong>quantitative vs qualitative</strong> and <strong>discrete vs continuous</strong> data</div>
+      </div>
+    </div>
+
+    <div class="section-label">Key concepts to know cold</div>
+    <div class="concepts">
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Mean vs Median</div>
+        <div class="concept-def">Mean = sum/count. Median = middle value. When data is skewed (outliers pull the mean), median is more representative. Palantir deals with messy real-world data — know which to use and why.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Distribution</div>
+        <div class="concept-def">How values are spread across a dataset. Normal = bell curve. Skewed = tail on one side. Uniform = flat. Understanding shape tells you what analysis methods are appropriate.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Cardinality</div>
+        <div class="concept-def">The number of unique values in a column. High cardinality = many unique values (like user IDs). Low cardinality = few (like status: active/inactive). Affects how you aggregate and index data.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Null / Missing Values</div>
+        <div class="concept-def">Missing data isn't zero — it's unknown. Nulls must be handled explicitly: drop, fill with mean/median, or flag. Never assume null = 0 without business justification.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Outlier</div>
+        <div class="concept-def">A value far from others. Can be errors (data quality issue) or genuine signals. Use IQR method: outlier if < Q1 − 1.5×IQR or > Q3 + 1.5×IQR.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Data</div>
+        <div class="concept-term">Variance & Std Dev</div>
+        <div class="concept-def">Variance = average squared distance from mean. Std dev = √variance. Low std dev = values cluster near mean. High = spread out. Use std dev to describe spread in plain language.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Self-check quiz</div>
+    <div class="quiz">
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">A dataset of 10 salaries has one value of $5M. Should you report the mean or median to describe a typical salary? Why? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">Report the <strong>median</strong>. The $5M outlier pulls the mean up dramatically, making it unrepresentative of what a "typical" person earns. The median is resistant to outliers. In real Palantir scenarios, you'd flag the outlier and explain both values.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What does high cardinality in a "customer_id" column tell you about how to aggregate it? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">High cardinality means many unique values — you wouldn't group by customer_id to get meaningful counts (every group has ~1 row). Instead you'd <code>COUNT(DISTINCT customer_id)</code> or group by a lower-cardinality field like region or product category. Cardinality shapes your aggregation strategy.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What's the difference between discrete and continuous data? Give one example of each. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><strong>Discrete</strong>: countable, finite values. Example: number of support tickets (you can't have 3.7 tickets). <strong>Continuous</strong>: can take any value in a range. Example: response time in milliseconds (can be 102.47ms). This distinction affects which charts and statistical tests you use.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Practice tasks</div>
+    <div class="practice-block">
+      <div class="practice-header"><div class="practice-dot"></div><div class="practice-title">Week 1 exercises</div></div>
+      <div class="practice-body">
+        <div class="practice-item"><div class="practice-num">01</div><div>Build a glossary: write your own one-sentence definitions for mean, median, mode, variance, std dev, outlier, cardinality, null, distribution. Say each one aloud.</div></div>
+        <div class="practice-item"><div class="practice-num">02</div><div>Complete Khan Academy — Statistics: Displaying and Describing Data section. Take the quizzes.</div></div>
+        <div class="practice-item"><div class="practice-num">03</div><div>Find a CSV dataset on Kaggle (any topic you care about). Open it in Excel or Google Sheets. Identify: column types, null counts, any obvious outliers by eye.</div></div>
+        <div class="practice-item"><div class="practice-num">04</div><div>Calculate mean and median manually on a small dataset (10 numbers). Then add an outlier and recalculate. Notice the difference.</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://www.khanacademy.org/math/statistics-probability" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Khan Academy — Statistics & Probability (full course)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://www.coursera.org/professional-certificates/google-data-analytics" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Google Data Analytics Certificate — Week 1 (Coursera, audit free)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://learning.oreilly.com/library/view/data-science-from/9781492041122/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">O'Reilly (via MWR) — Data Science from Scratch, Ch. 1–3</div>
+        <span class="res-badge rb-free">Free via MWR</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>Study tip:</strong> Don't just read definitions — explain them out loud to yourself. ATF wants people who can communicate data concepts clearly, not just pass a test. Practice saying "the standard deviation here tells us that..." out loud until it sounds natural.</div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="week-panel" id="panel-2">
+    <div class="wp-header">
+      <div class="wp-num">02</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: Python for Data</div>
+        <div class="wp-title">pandas Basics: Loading, Filtering & Describing Data</div>
+        <div class="wp-hours">~8 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(2)">Mark done</button>
+    </div>
+
+    <div class="section-label">Learning objectives</div>
+    <div class="objectives">
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Load a CSV into a <strong>pandas DataFrame</strong> and inspect it with <code style="font-family:monospace;color:var(--accent);font-size:12px">head(), info(), describe(), shape</code></div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Select columns, filter rows with <strong>boolean indexing</strong>, and handle <strong>null values</strong> with dropna() and fillna()</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Sort data with <strong>sort_values()</strong> and compute grouped summaries with <strong>groupby()</strong></div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Add computed columns and apply <strong>lambda functions</strong> to transform data</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Write a clean, readable pandas script from scratch — no copy-paste</div></div>
+    </div>
+
+    <div class="section-label">Core pandas patterns</div>
+    <div class="code-block">
+<pre><span class="c-kw">import</span> pandas <span class="c-kw">as</span> pd
+
+<span class="c-comment"># Load data</span>
+df = pd.<span class="c-fn">read_csv</span>(<span class="c-str">'data.csv'</span>)
+
+<span class="c-comment"># Inspect</span>
+df.<span class="c-fn">head</span>()          <span class="c-comment"># first 5 rows</span>
+df.<span class="c-fn">info</span>()          <span class="c-comment"># column types + null counts</span>
+df.<span class="c-fn">describe</span>()      <span class="c-comment"># mean, std, min, max per column</span>
+df.shape           <span class="c-comment"># (rows, columns)</span>
+
+<span class="c-comment"># Select & filter</span>
+df[<span class="c-str">'age'</span>]                        <span class="c-comment"># single column (Series)</span>
+df[[<span class="c-str">'age'</span>, <span class="c-str">'salary'</span>]]            <span class="c-comment"># multiple columns</span>
+df[df[<span class="c-str">'age'</span>] > <span class="c-num">30</span>]               <span class="c-comment"># filter rows</span>
+df[(df[<span class="c-str">'age'</span>] > <span class="c-num">30</span>) & (df[<span class="c-str">'dept'</span>] == <span class="c-str">'Eng'</span>)]
+
+<span class="c-comment"># Handle nulls</span>
+df.<span class="c-fn">isnull</span>().<span class="c-fn">sum</span>()              <span class="c-comment"># count nulls per column</span>
+df.<span class="c-fn">dropna</span>(subset=[<span class="c-str">'salary'</span>])    <span class="c-comment"># drop rows with null salary</span>
+df[<span class="c-str">'age'</span>].<span class="c-fn">fillna</span>(df[<span class="c-str">'age'</span>].<span class="c-fn">median</span>(), inplace=<span class="c-kw">True</span>)
+
+<span class="c-comment"># Sort & group</span>
+df.<span class="c-fn">sort_values</span>(<span class="c-str">'salary'</span>, ascending=<span class="c-kw">False</span>)
+df.<span class="c-fn">groupby</span>(<span class="c-str">'dept'</span>)[<span class="c-str">'salary'</span>].<span class="c-fn">mean</span>()
+
+<span class="c-comment"># Add a computed column</span>
+df[<span class="c-str">'salary_k'</span>] = df[<span class="c-str">'salary'</span>] / <span class="c-num">1000</span>
+df[<span class="c-str">'senior'</span>] = df[<span class="c-str">'age'</span>].<span class="c-fn">apply</span>(<span class="c-kw">lambda</span> x: x > <span class="c-num">40</span>)</pre>
+    </div>
+
+    <div class="section-label">Self-check quiz</div>
+    <div class="quiz">
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What does df.groupby('region')['sales'].sum() return, and what does it tell you? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">It returns a <strong>Series</strong> where each index value is a unique region and the value is the total sales for that region. It tells you the aggregate sales contribution per region — useful for comparing performance geographically.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What's the difference between df.dropna() and df.fillna()? When would you use each? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><code>dropna()</code> removes rows (or columns) with any null values — use when nulls are rare and rows are expendable. <code>fillna()</code> replaces nulls with a value (mean, median, 0, 'Unknown') — use when you need to retain all rows. Filling with median is common for numeric columns to avoid bias from outliers.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Write a one-liner to filter a DataFrame to rows where 'status' is 'active' AND 'score' is above 80. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><code>df[(df['status'] == 'active') & (df['score'] > 80)]</code><br><br>Note the parentheses around each condition — required in pandas because of operator precedence. Using <code>and</code> instead of <code>&</code> will raise an error.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Practice tasks</div>
+    <div class="practice-block">
+      <div class="practice-header"><div class="practice-dot"></div><div class="practice-title">Week 2 exercises</div></div>
+      <div class="practice-body">
+        <div class="practice-item"><div class="practice-num">01</div><div>Complete the full Kaggle Pandas micro-course (~4 hrs). Do every exercise in the browser notebook — don't skip them.</div></div>
+        <div class="practice-item"><div class="practice-num">02</div><div>Download a dataset from Kaggle. Load it in a Jupyter notebook. Run head(), info(), describe(), isnull().sum(). Write a 3-sentence summary of what the data looks like.</div></div>
+        <div class="practice-item"><div class="practice-num">03</div><div>Write a groupby that answers a real question about your dataset (e.g., "what's the average salary by department?"). Explain the output in plain English.</div></div>
+        <div class="practice-item"><div class="practice-num">04</div><div>Handle at least one column with nulls — decide whether to drop or fill, and justify your choice in a comment.</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://www.kaggle.com/learn/pandas" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Kaggle — Pandas micro-course (free, in-browser notebooks)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://learning.oreilly.com/library/view/python-for-data/9781098104023/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">O'Reilly (via MWR) — Python for Data Analysis, Ch. 1–5 (Wes McKinney)</div>
+        <span class="res-badge rb-free">Free via MWR</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://realpython.com/pandas-dataframe/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Real Python — Pandas DataFrame tutorial</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>Study tip:</strong> Write every code snippet by hand in a real notebook — don't copy-paste. Muscle memory matters in an interview setting. After you write it, delete it and write it again without looking.</div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="week-panel" id="panel-3">
+    <div class="wp-header">
+      <div class="wp-num">03</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: Data Analytics</div>
+        <div class="wp-title">SQL Logic: Groupby, Joins, Aggregation & Analyst Thinking</div>
+        <div class="wp-hours">~6 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(3)">Mark done</button>
+    </div>
+
+    <div class="section-label">Learning objectives</div>
+    <div class="objectives">
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Write <strong>SELECT, WHERE, GROUP BY, HAVING, ORDER BY</strong> queries from scratch</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Use <strong>aggregate functions</strong>: COUNT, SUM, AVG, MIN, MAX — and know when to use each</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Understand and write <strong>INNER, LEFT, RIGHT, and FULL OUTER JOINs</strong> — know what rows each keeps and drops</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Translate a <strong>business question</strong> into a SQL query (the analyst thinking pattern)</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Understand why SQL intuition maps directly to <strong>Palantir Foundry</strong> data pipeline logic</div></div>
+    </div>
+
+    <div class="section-label">Key SQL patterns</div>
+    <div class="code-block">
+<pre><span class="c-comment">-- Basic aggregation</span>
+<span class="c-kw">SELECT</span> dept, <span class="c-fn">AVG</span>(salary) <span class="c-kw">AS</span> avg_salary, <span class="c-fn">COUNT</span>(*) <span class="c-kw">AS</span> headcount
+<span class="c-kw">FROM</span> employees
+<span class="c-kw">WHERE</span> status = <span class="c-str">'active'</span>
+<span class="c-kw">GROUP BY</span> dept
+<span class="c-kw">HAVING</span> <span class="c-fn">COUNT</span>(*) > <span class="c-num">5</span>
+<span class="c-kw">ORDER BY</span> avg_salary <span class="c-kw">DESC</span>;
+
+<span class="c-comment">-- INNER JOIN (only matching rows in both tables)</span>
+<span class="c-kw">SELECT</span> o.order_id, c.name, o.total
+<span class="c-kw">FROM</span> orders o
+<span class="c-kw">INNER JOIN</span> customers c <span class="c-kw">ON</span> o.customer_id = c.id;
+
+<span class="c-comment">-- LEFT JOIN (all rows from left, nulls where no match)</span>
+<span class="c-kw">SELECT</span> c.name, <span class="c-fn">COUNT</span>(o.order_id) <span class="c-kw">AS</span> order_count
+<span class="c-kw">FROM</span> customers c
+<span class="c-kw">LEFT JOIN</span> orders o <span class="c-kw">ON</span> c.id = o.customer_id
+<span class="c-kw">GROUP BY</span> c.name;
+<span class="c-comment">-- Customers with 0 orders will appear with order_count = 0</span>
+
+<span class="c-comment">-- Business question → query pattern</span>
+<span class="c-comment">-- Q: "What % of customers placed more than one order?"</span>
+<span class="c-kw">SELECT</span>
+  <span class="c-fn">COUNT</span>(<span class="c-kw">CASE WHEN</span> order_count > <span class="c-num">1</span> <span class="c-kw">THEN</span> <span class="c-num">1</span> <span class="c-kw">END</span>) * <span class="c-num">100.0</span> / <span class="c-fn">COUNT</span>(*)
+<span class="c-kw">FROM</span> (
+  <span class="c-kw">SELECT</span> customer_id, <span class="c-fn">COUNT</span>(*) <span class="c-kw">AS</span> order_count
+  <span class="c-kw">FROM</span> orders <span class="c-kw">GROUP BY</span> customer_id
+) sub;</pre>
+    </div>
+
+    <div class="section-label">Joins cheat sheet</div>
+    <div class="concepts">
+      <div class="concept-card">
+        <div class="concept-tag ct-sql">SQL</div>
+        <div class="concept-term">INNER JOIN</div>
+        <div class="concept-def">Returns only rows where the join key exists in BOTH tables. Unmatched rows are excluded from both sides. Most common join.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-sql">SQL</div>
+        <div class="concept-term">LEFT JOIN</div>
+        <div class="concept-def">Returns ALL rows from the left table, plus matching rows from the right. Right-side columns are NULL where there's no match. Use to find customers with no orders.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-sql">SQL</div>
+        <div class="concept-term">GROUP BY vs WHERE</div>
+        <div class="concept-def">WHERE filters before aggregation (on individual rows). HAVING filters after aggregation (on groups). You can't use aggregate functions in WHERE — use HAVING.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-sql">SQL</div>
+        <div class="concept-term">COUNT(*) vs COUNT(col)</div>
+        <div class="concept-def">COUNT(*) counts all rows including nulls. COUNT(col) counts only non-null values in that column. Use COUNT(DISTINCT col) for unique value counts.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Self-check quiz</div>
+    <div class="quiz">
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What's the difference between WHERE and HAVING? Why can't you use WHERE to filter on SUM(sales)? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><code>WHERE</code> filters individual rows <em>before</em> grouping. <code>HAVING</code> filters groups <em>after</em> aggregation. You can't use <code>WHERE SUM(sales) > 1000</code> because SUM doesn't exist at the row level — it only exists after GROUP BY runs. Use <code>HAVING SUM(sales) > 1000</code> instead.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">You have a customers table and an orders table. Write a query to find all customers who have NEVER placed an order. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><code>SELECT c.name FROM customers c LEFT JOIN orders o ON c.id = o.customer_id WHERE o.order_id IS NULL;</code><br><br>A LEFT JOIN returns all customers. Where there's no matching order, order columns are NULL. Filtering for <code>WHERE o.order_id IS NULL</code> isolates customers with zero orders.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Translate this business question to SQL: "Show me the top 5 products by total revenue this month." <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a"><code>SELECT product_name, SUM(revenue) AS total_revenue FROM sales WHERE order_date >= DATE_TRUNC('month', CURRENT_DATE) GROUP BY product_name ORDER BY total_revenue DESC LIMIT 5;</code><br><br>The pattern: aggregate → group → filter on aggregate (if needed) → sort → limit. Practicing this translation from English to SQL is the core analyst skill.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://mode.com/sql-tutorial/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Mode SQL Tutorial — beginner to intermediate (browser-based)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://sqlzoo.net" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">SQLZoo — interactive exercises with immediate feedback</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://www.kaggle.com/learn/intro-to-sql" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Kaggle — Intro to SQL micro-course</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>Palantir context:</strong> Foundry's Pipeline Builder and Code Workbook use SQL-like transforms on datasets. Understanding GROUP BY and JOINs isn't just academic — it's literally how you'll manipulate data inside the platform. Think of every SQL concept as a Foundry transform you'll write on day one.</div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="week-panel" id="panel-4">
+    <div class="wp-header">
+      <div class="wp-num">04</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: Python — Software Dev Principles</div>
+        <div class="wp-title">OOP, Clean Code & Software Development Principles</div>
+        <div class="wp-hours">~8 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(4)">Mark done</button>
+    </div>
+
+    <div class="section-label">Learning objectives</div>
+    <div class="objectives">
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Define and implement <strong>classes, instances, attributes, and methods</strong> in Python</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Use <strong>inheritance</strong> to extend classes without repeating code</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Explain <strong>encapsulation, abstraction, polymorphism</strong> in plain English with a Python example</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Write code that follows <strong>single responsibility principle</strong>, uses clear naming, and has meaningful comments</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Structure a Python project with <strong>modules, imports, and separation of concerns</strong></div></div>
+    </div>
+
+    <div class="section-label">OOP in Python — patterns to know</div>
+    <div class="code-block">
+<pre><span class="c-comment"># Class definition</span>
+<span class="c-kw">class</span> <span class="c-fn">DataPipeline</span>:
+    <span class="c-str">"""Processes and transforms a dataset."""</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, source: str, target: str):
+        self.source = source
+        self.target = target
+        self._records = []         <span class="c-comment"># _private by convention</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">load</span>(self) -> <span class="c-kw">None</span>:
+        <span class="c-str">"""Load data from source."""</span>
+        <span class="c-comment"># Single responsibility: only loads</span>
+        self._records = self.<span class="c-fn">_read_source</span>()
+
+    <span class="c-kw">def</span> <span class="c-fn">transform</span>(self, fn) -> <span class="c-kw">None</span>:
+        <span class="c-str">"""Apply a transform function to all records."""</span>
+        self._records = [<span class="c-fn">fn</span>(r) <span class="c-kw">for</span> r <span class="c-kw">in</span> self._records]
+
+    <span class="c-kw">def</span> <span class="c-fn">record_count</span>(self) -> int:
+        <span class="c-kw">return</span> <span class="c-fn">len</span>(self._records)
+
+<span class="c-comment"># Inheritance</span>
+<span class="c-kw">class</span> <span class="c-fn">FilteredPipeline</span>(<span class="c-fn">DataPipeline</span>):
+    <span class="c-kw">def</span> <span class="c-fn">__init__</span>(self, source, target, predicate):
+        <span class="c-fn">super</span>().__init__(source, target)
+        self.predicate = predicate  <span class="c-comment"># extends parent</span>
+
+    <span class="c-kw">def</span> <span class="c-fn">filter</span>(self) -> <span class="c-kw">None</span>:
+        self._records = [r <span class="c-kw">for</span> r <span class="c-kw">in</span> self._records <span class="c-kw">if</span> self.<span class="c-fn">predicate</span>(r)]</pre>
+    </div>
+
+    <div class="section-label">Key principles</div>
+    <div class="concepts">
+      <div class="concept-card">
+        <div class="concept-tag ct-python">Python</div>
+        <div class="concept-term">Single Responsibility</div>
+        <div class="concept-def">A class or function should do one thing and do it well. If you're writing "and" in a function description — split it. load_and_transform() → load() + transform().</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-python">Python</div>
+        <div class="concept-term">Encapsulation</div>
+        <div class="concept-def">Bundle data and the methods that operate on it inside a class. Protect internals with _ prefix. External code uses the public interface, not the internals directly.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-python">Python</div>
+        <div class="concept-term">DRY Principle</div>
+        <div class="concept-def">Don't Repeat Yourself. If you write the same logic twice, abstract it into a function or class. Repetition = future bugs when you update one copy but forget another.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-python">Python</div>
+        <div class="concept-term">Naming Conventions</div>
+        <div class="concept-def">Classes: PascalCase. Functions/variables: snake_case. Constants: UPPER_CASE. Be descriptive: calculate_average_salary() beats calc_avg(). Code is read 10× more than it's written.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Self-check quiz</div>
+    <div class="quiz">
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What's the difference between a class and an instance? Give a concrete example. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">A <strong>class</strong> is a blueprint — it defines structure and behavior. An <strong>instance</strong> is a specific object created from that blueprint. Example: <code>DataPipeline</code> is the class. <code>pipeline = DataPipeline('s3://raw', 's3://clean')</code> creates an instance. Multiple instances can exist with different data independently.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Explain inheritance to a non-technical person in 2 sentences. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">Inheritance lets a new class automatically get all the abilities of an existing class, so you don't have to rewrite them. Then you can add new abilities or change specific behaviors on top of what you inherited — like a specialist who knows everything a generalist knows, plus more.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Why is the single responsibility principle important in a team codebase? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">When each function or class does one thing, it's <strong>easier to test</strong> (test the one thing it does), <strong>easier to debug</strong> (failure points are isolated), and <strong>easier for teammates to understand</strong> without reading the whole system. A 200-line function that loads, transforms, validates, and writes data is a maintenance nightmare — any change risks breaking all four behaviors.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://realpython.com/python3-object-oriented-programming/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Real Python — OOP in Python 3 (comprehensive guide)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://learning.oreilly.com/library/view/clean-code-in/9781800560214/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">O'Reilly (via MWR) — Clean Code in Python (Mariano Anaya)</div>
+        <span class="res-badge rb-free">Free via MWR</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://github.com" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">GitHub — apply OOP principles to your own project repos</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>ATF context:</strong> Palantir will evaluate whether you think like a software developer — not just a scripter. Being able to explain WHY you structured code a certain way (single responsibility, encapsulation) signals engineering maturity. Practice explaining your design decisions out loud.</div>
+  </div>
+
+  <!-- WEEK 5 -->
+  <div class="week-panel" id="panel-5">
+    <div class="wp-header">
+      <div class="wp-num">05</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: Data Analytics + Python</div>
+        <div class="wp-title">Data Visualization + End-to-End Analysis Mini-Project</div>
+        <div class="wp-hours">~8 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(5)">Mark done</button>
+    </div>
+
+    <div class="section-label">Learning objectives</div>
+    <div class="objectives">
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Choose the <strong>right chart type</strong> for the data and the question being asked</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Create <strong>bar charts, line charts, histograms, and scatter plots</strong> using matplotlib or seaborn</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Build a <strong>complete analysis notebook</strong>: load → clean → analyze → visualize → written summary</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text">Communicate findings in <strong>plain English</strong> — what the chart shows, why it matters, what you'd do next</div></div>
+    </div>
+
+    <div class="section-label">Chart type guide</div>
+    <div class="concepts">
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Viz</div>
+        <div class="concept-term">Bar Chart</div>
+        <div class="concept-def">Compare quantities across categories. Use when comparing a metric (sales, count) across discrete groups (regions, products). Horizontal bars work better with long category names.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Viz</div>
+        <div class="concept-term">Line Chart</div>
+        <div class="concept-def">Show change over time. X-axis should be time (or ordered sequence). Ideal for trends: revenue by month, daily active users. Don't use for categorical comparisons.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Viz</div>
+        <div class="concept-term">Histogram</div>
+        <div class="concept-def">Show distribution of a single continuous variable. Reveals skew, outliers, and shape. Not the same as a bar chart — bars represent ranges (bins), not categories.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-tag ct-data">Viz</div>
+        <div class="concept-term">Scatter Plot</div>
+        <div class="concept-def">Show relationship between two continuous variables. Reveals correlation, clusters, and outliers. Add a regression line to show trend direction. Correlation ≠ causation.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Mini-project: end-to-end analysis template</div>
+    <div class="code-block">
+<pre><span class="c-comment"># ── SECTION 1: Load & Inspect ──────────────────────</span>
+<span class="c-kw">import</span> pandas <span class="c-kw">as</span> pd
+<span class="c-kw">import</span> matplotlib.pyplot <span class="c-kw">as</span> plt
+<span class="c-kw">import</span> seaborn <span class="c-kw">as</span> sns
+
+df = pd.<span class="c-fn">read_csv</span>(<span class="c-str">'your_dataset.csv'</span>)
+<span class="c-fn">print</span>(df.<span class="c-fn">info</span>())
+<span class="c-fn">print</span>(df.<span class="c-fn">describe</span>())
+<span class="c-fn">print</span>(df.<span class="c-fn">isnull</span>().<span class="c-fn">sum</span>())
+
+<span class="c-comment"># ── SECTION 2: Clean ───────────────────────────────</span>
+df = df.<span class="c-fn">dropna</span>(subset=[<span class="c-str">'key_column'</span>])
+df[<span class="c-str">'numeric_col'</span>].<span class="c-fn">fillna</span>(df[<span class="c-str">'numeric_col'</span>].<span class="c-fn">median</span>(), inplace=<span class="c-kw">True</span>)
+
+<span class="c-comment"># ── SECTION 3: Analyze ─────────────────────────────</span>
+summary = df.<span class="c-fn">groupby</span>(<span class="c-str">'category'</span>)[<span class="c-str">'value'</span>].<span class="c-fn">agg</span>([<span class="c-str">'mean'</span>, <span class="c-str">'sum'</span>, <span class="c-str">'count'</span>])
+top_5 = df.<span class="c-fn">nlargest</span>(<span class="c-num">5</span>, <span class="c-str">'value'</span>)
+
+<span class="c-comment"># ── SECTION 4: Visualize ───────────────────────────</span>
+fig, axes = plt.<span class="c-fn">subplots</span>(<span class="c-num">1</span>, <span class="c-num">2</span>, figsize=(<span class="c-num">12</span>, <span class="c-num">5</span>))
+
+<span class="c-comment"># Bar chart: category comparison</span>
+summary[<span class="c-str">'mean'</span>].<span class="c-fn">plot</span>(kind=<span class="c-str">'bar'</span>, ax=axes[<span class="c-num">0</span>], title=<span class="c-str">'Avg Value by Category'</span>)
+axes[<span class="c-num">0</span>].<span class="c-fn">set_ylabel</span>(<span class="c-str">'Mean Value'</span>)
+
+<span class="c-comment"># Histogram: distribution</span>
+df[<span class="c-str">'value'</span>].<span class="c-fn">hist</span>(bins=<span class="c-num">30</span>, ax=axes[<span class="c-num">1</span>])
+axes[<span class="c-num">1</span>].<span class="c-fn">set_title</span>(<span class="c-str">'Distribution of Value'</span>)
+
+plt.<span class="c-fn">tight_layout</span>()
+plt.<span class="c-fn">savefig</span>(<span class="c-str">'analysis.png'</span>, dpi=<span class="c-num">150</span>)
+
+<span class="c-comment"># ── SECTION 5: Summary (write this in markdown) ────</span>
+<span class="c-comment"># Key finding 1: ...</span>
+<span class="c-comment"># Key finding 2: ...</span>
+<span class="c-comment"># Recommendation: ...</span></pre>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://www.kaggle.com/learn/data-visualization" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Kaggle — Data Visualization micro-course (matplotlib + seaborn)</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://www.kaggle.com/datasets" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Kaggle Datasets — pick a real dataset for your mini-project</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://learning.oreilly.com/library/view/python-for-data/9781098104023/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">O'Reilly (via MWR) — Python for Data Analysis: visualization chapters</div>
+        <span class="res-badge rb-free">Free via MWR</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>Deliverable:</strong> By end of this week you should have a Jupyter notebook that tells a complete story with a real dataset. Push it to GitHub. This becomes a portfolio piece you can reference in ATF conversations about your technical work.</div>
+  </div>
+
+  <!-- WEEK 6 -->
+  <div class="week-panel" id="panel-6">
+    <div class="wp-header">
+      <div class="wp-num">06</div>
+      <div class="wp-meta">
+        <div class="wp-track">Track: ATF Readiness</div>
+        <div class="wp-title">Final Self-Assessment: Data Analytics + Python Fluency</div>
+        <div class="wp-hours">~6 hours</div>
+      </div>
+      <button class="mark-done-btn" onclick="toggleDone(6)">Mark done</button>
+    </div>
+
+    <div class="section-label">Readiness checklist</div>
+    <div class="objectives">
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text"><strong>Data Analytics:</strong> Can you explain mean vs median, distribution, outliers, groupby aggregation, and JOIN types out loud without notes?</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text"><strong>pandas:</strong> Can you load a CSV, filter rows, handle nulls, groupby, and add a computed column from memory?</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text"><strong>SQL:</strong> Can you write a SELECT with GROUP BY, HAVING, and a LEFT JOIN from a business question in under 3 minutes?</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text"><strong>OOP:</strong> Can you write a class with __init__, methods, and inheritance, and explain why each design choice was made?</div></div>
+      <div class="obj-card"><div class="obj-icon">→</div><div class="obj-text"><strong>Communication:</strong> Can you look at a chart and explain what it shows, why it matters, and what you'd investigate next?</div></div>
+    </div>
+
+    <div class="section-label">Final review quiz</div>
+    <div class="quiz">
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Walk me through how you'd approach analyzing a new dataset you've never seen before. <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">1. <strong>Load and inspect</strong>: shape, dtypes, head(), isnull().sum(). Understand what each column represents. 2. <strong>Clean</strong>: handle nulls (drop or fill), check for duplicates, fix data type issues. 3. <strong>Explore</strong>: compute descriptive stats, look at distributions, run groupby aggregations to find patterns. 4. <strong>Visualize</strong>: pick charts appropriate to the question. 5. <strong>Summarize</strong>: write key findings and what they mean in plain English. Always start with the business question — it guides every decision.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">What's Palantir Foundry, and how does your training connect to it? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">Foundry is Palantir's data integration and analysis platform used by governments, military, and enterprises to make sense of large, complex datasets. It provides a pipeline-based architecture for ingesting, transforming, and analyzing data. Your SQL skills map directly to Foundry's data transforms. Your pandas knowledge maps to its Python Code Workbook. Your analytics thinking maps to Foundry Slate dashboards and analysis workflows. You're not learning abstract skills — you're learning the underlying thinking Foundry is built on.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">You see a bar chart where one category is 10× higher than all others. What do you do? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">Don't immediately report it as a finding — investigate first. Ask: is this a data error (duplicate records, incorrect join)? Is it a legitimate outlier (one massive client)? Check the raw data for that category. Verify the aggregation logic. If it's real, explain it in context: "Category X accounts for 71% of revenue — this is driven by Client Y, which signed a $5M contract in Q3." Always show you validated the data before drawing conclusions.</div>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-q" onclick="toggleQuiz(this)">Why would you use a class instead of a standalone function for a data pipeline? <span class="quiz-toggle">▾</span></div>
+        <div class="quiz-a">A class lets you bundle <strong>state</strong> (the data being processed, config settings, error log) with the <strong>behavior</strong> (load, transform, validate, write) that operates on it. With standalone functions, you'd pass state around as arguments constantly. A class also enables inheritance — a FilteredPipeline can extend a base DataPipeline without rewriting the shared logic. For a one-off script a function is fine; for a reusable, testable component, a class is the right abstraction.</div>
+      </div>
+    </div>
+
+    <div class="section-label">Final practice tasks</div>
+    <div class="practice-block">
+      <div class="practice-header"><div class="practice-dot"></div><div class="practice-title">Week 6 — final week exercises</div></div>
+      <div class="practice-body">
+        <div class="practice-item"><div class="practice-num">01</div><div>Do 5 easy Python problems on LeetCode using array/list manipulation — no looking up syntax. Focus on clean, readable solutions.</div></div>
+        <div class="practice-item"><div class="practice-num">02</div><div>Write the full pandas workflow (load, inspect, clean, groupby, visualize) from memory on a new dataset you haven't used before.</div></div>
+        <div class="practice-item"><div class="practice-num">03</div><div>Write 5 SQL queries from business questions you make up yourself. No reference — write from memory, then verify against SQLZoo.</div></div>
+        <div class="practice-item"><div class="practice-num">04</div><div>Record yourself explaining your Week 5 notebook project out loud for 2 minutes. Review it. Could a non-technical person follow your findings?</div></div>
+        <div class="practice-item"><div class="practice-num">05</div><div>Read the official Palantir ATF fellowship page. Understand what the program expects and how your skills map to what they'll ask you to do.</div></div>
+      </div>
+    </div>
+
+    <div class="section-label">Resources</div>
+    <div class="resources">
+      <a class="res-item" href="https://www.palantir.com/impact/fellowship/" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Palantir ATF — official fellowship information</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://www.kaggle.com/learn" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">Kaggle — revisit any micro-course with remaining gaps</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+      <a class="res-item" href="https://leetcode.com/problemset/?difficulty=EASY&topicSlugs=array" target="_blank">
+        <div class="res-dot rd-free"></div>
+        <div class="res-label">LeetCode — easy Python array problems for fluency</div>
+        <span class="res-badge rb-free">Free</span>
+        <span class="res-arrow">↗</span>
+      </a>
+    </div>
+
+    <div class="study-note"><strong>You're ready when:</strong> you can sit down with a dataset you've never seen, ask a smart question about it, write the code to answer it, visualize the result, and explain what you found — all without looking anything up. That's the bar. It's reachable in 6 weeks with consistent daily practice.</div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const WEEKS = [
+  { id: 1, name: "Data Fundamentals & Descriptive Stats", track: "Analytics" },
+  { id: 2, name: "pandas: Load, Filter & Describe", track: "Python" },
+  { id: 3, name: "SQL: Joins, Groupby & Aggregation", track: "Analytics" },
+  { id: 4, name: "OOP, Clean Code & Dev Principles", track: "Python" },
+  { id: 5, name: "Visualization + Mini-Project", track: "Both" },
+  { id: 6, name: "Final Self-Assessment", track: "Readiness" },
+];
+
+const STORAGE_KEY = 'palantir_atf_guide_v1';
+let doneSet = new Set();
+let _fbDb = null;
+let _fbDoc = null;
+let _fbPending = null;
+
+function setSyncStatus(status) {
+  const dot = document.getElementById('p-sync-dot');
+  const txt = document.getElementById('p-sync-txt');
+  if (!dot || !txt) return;
+  dot.className = 'p-sync-dot ' + status;
+  const labels = { synced: 'Synced', syncing: 'Syncing...', error: 'Offline — saved locally' };
+  txt.textContent = labels[status] || status;
+}
+
+function saveState() {
+  setSyncStatus('syncing');
+  if (_fbPending) clearTimeout(_fbPending);
+  _fbPending = setTimeout(async () => {
+    const arr = [...doneSet];
+    if (_fbDb && _fbDoc) {
+      try {
+        const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        await setDoc(_fbDoc, { done: arr });
+        setSyncStatus('synced');
+      } catch(e) {
+        setSyncStatus('error');
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch(e2) {}
+      }
+    } else {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch(e) {}
+    }
+  }, 600);
+}
+
+async function loadState() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore, doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const firebaseConfig = {
+      apiKey: "AIzaSyDjfRzuRxxoxtRJdQzklKq0l-zrFeQ19GI",
+      authDomain: "cp-training-hub.firebaseapp.com",
+      projectId: "cp-training-hub",
+      storageBucket: "cp-training-hub.firebasestorage.app",
+      messagingSenderId: "665937146753",
+      appId: "1:665937146753:web:f8b48ffe1ab76fc76aae80"
+    };
+    const app = initializeApp(firebaseConfig, "palantir");
+    _fbDb = getFirestore(app);
+    _fbDoc = doc(_fbDb, "progress", "palantir");
+    onSnapshot(_fbDoc, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        doneSet = new Set(data.done || []);
+      }
+      setSyncStatus('synced');
+      buildNav();
+      updateStats();
+      showWeek(1);
+    }, () => {
+      setSyncStatus('error');
+      try { const fb = localStorage.getItem(STORAGE_KEY); if (fb) doneSet = new Set(JSON.parse(fb)); } catch(e) {}
+      buildNav();
+      updateStats();
+      showWeek(1);
+    });
+  } catch(e) {
+    setSyncStatus('error');
+    try { const fb = localStorage.getItem(STORAGE_KEY); if (fb) doneSet = new Set(JSON.parse(fb)); } catch(e2) {}
+    buildNav();
+    updateStats();
+    showWeek(1);
+  }
+}
+
+function buildNav() {
+  const nav = document.getElementById('week-nav');
+  WEEKS.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'week-btn' + (doneSet.has(w.id) ? ' week-done' : '');
+    btn.id = `nav-${w.id}`;
+    btn.innerHTML = `
+      <div class="week-num">W${w.id}</div>
+      <div class="week-name">${w.name}</div>
+      <div class="week-check">✓</div>
+    `;
+    btn.addEventListener('click', () => showWeek(w.id));
+    nav.appendChild(btn);
+  });
+}
+
+let currentWeek = null;
+
+function showWeek(id) {
+  // hide home
+  document.getElementById('home-panel').style.display = 'none';
+
+  // deactivate all panels
+  document.querySelectorAll('.week-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+
+  // activate target
+  const panel = document.getElementById(`panel-${id}`);
+  const btn = document.getElementById(`nav-${id}`);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+
+  // update done btn
+  const doneBtn = panel?.querySelector('.mark-done-btn');
+  if (doneBtn) {
+    doneBtn.textContent = doneSet.has(id) ? '✓ Complete' : 'Mark done';
+    doneBtn.classList.toggle('done', doneSet.has(id));
+  }
+
+  currentWeek = id;
+}
+
+function toggleDone(id) {
+  if (doneSet.has(id)) {
+    doneSet.delete(id);
+  } else {
+    doneSet.add(id);
+  }
+  saveState();
+
+  // update nav btn
+  const navBtn = document.getElementById(`nav-${id}`);
+  if (navBtn) navBtn.classList.toggle('week-done', doneSet.has(id));
+
+  // update mark done btn
+  const panel = document.getElementById(`panel-${id}`);
+  const doneBtn = panel?.querySelector('.mark-done-btn');
+  if (doneBtn) {
+    doneBtn.textContent = doneSet.has(id) ? '✓ Complete' : 'Mark done';
+    doneBtn.classList.toggle('done', doneSet.has(id));
+  }
+
+  updateStats();
+}
+
+function updateStats() {
+  const done = doneSet.size;
+  const total = WEEKS.length;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('op-fill').style.width = pct + '%';
+  document.getElementById('pct-label').textContent = pct + '%';
+}
+
+function toggleQuiz(el) {
+  const card = el.closest('.quiz-card');
+  card.classList.toggle('open');
+}
+
+loadState();
+</script>
+</body>
+</html>
