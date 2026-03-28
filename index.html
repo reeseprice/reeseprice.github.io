@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reese — Training Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Fraunces:ital,wght@0,300;0,600;0,900;1,300;1,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f0e8;--paper:#faf7f2;--ink:#1a1612;--ink2:#4a4540;--ink3:#8a837a;--rule:#d8d0c4;--accent:#c2410c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Mono',monospace;min-height:100vh;padding:40px 20px 80px;}
+.wrap{max-width:780px;margin:0 auto;}
+header{border-bottom:2px solid var(--ink);padding-bottom:24px;margin-bottom:36px;}
+.eyebrow{font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;}
+h1{font-family:'Fraunces',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1;}
+h1 em{font-style:italic;font-weight:300;color:var(--accent);}
+.subtitle{font-size:12px;color:var(--ink3);margin-top:10px;letter-spacing:0.04em;}
+.sync-row{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:10px;color:var(--ink3);letter-spacing:0.08em;text-transform:uppercase;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--rule);}
+.sdot.synced{background:#10b981;}
+.sdot.syncing{background:#f59e0b;animation:blink 1s infinite;}
+.sdot.error{background:#ef4444;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.overall-bar{margin-top:16px;}
+.ob-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;}
+.ob-track{height:3px;background:var(--rule);border-radius:2px;overflow:hidden;}
+.ob-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s;width:0%;}
+.section-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;margin-top:32px;}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+.tool-card{background:var(--paper);border:1px solid var(--rule);padding:22px 24px;text-decoration:none;display:block;transition:all 0.2s;position:relative;overflow:hidden;}
+.tool-card:hover{border-color:var(--ink3);transform:translateY(-1px);}
+.tool-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.tool-card.schedule::before{background:#378ADD;}
+.tool-card.tracker::before{background:#7b2ff7;}
+.tool-card.palantir::before{background:#be185d;}
+.tool-card.anduril::before{background:#e3b341;}
+.tool-num{font-size:10px;color:var(--ink3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.tool-title{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;margin-bottom:6px;color:var(--ink);}
+.tool-desc{font-size:11px;color:var(--ink2);line-height:1.6;margin-bottom:14px;}
+.tool-meta{display:flex;align-items:center;justify-content:space-between;}
+.tool-stats{display:flex;gap:10px;}
+.tool-stat{font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink3);}
+.tool-stat span{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:900;color:var(--ink);display:block;line-height:1;margin-bottom:2px;}
+.tool-arrow{font-size:18px;color:var(--rule);transition:color 0.2s;}
+.tool-card:hover .tool-arrow{color:var(--accent);}
+.tool-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.tool-tag{font-size:9px;padding:2px 7px;border:1px solid var(--rule);border-radius:2px;color:var(--ink3);letter-spacing:0.05em;text-transform:uppercase;}
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--rule);font-size:10px;color:var(--ink3);letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Training Hub · Apr–Jun 2026</div>
+    <h1>Reese's <em>Training</em><br>Command Center</h1>
+    <div class="subtitle">// WGU · Palantir ATF · GCP · Terraform · Git</div>
+    <div class="sync-row">
+      <div class="sdot syncing" id="sdot"></div>
+      <span id="stxt">Loading progress...</span>
+    </div>
+    <div class="overall-bar">
+      <div class="ob-meta">
+        <span>Overall progress across all tools</span>
+        <span id="ob-pct">—</span>
+      </div>
+      <div class="ob-track"><div class="ob-fill" id="ob-fill"></div></div>
+    </div>
+  </header>
+
+  <div class="section-label">Your tools</div>
+  <div class="tools-grid">
+
+    <a class="tool-card schedule" href="weekly-schedule.html">
+      <div class="tool-num">01</div>
+      <div class="tool-title">Weekly Schedule</div>
+      <div class="tool-tags">
+        <span class="tool-tag">Daily</span>
+        <span class="tool-tag">5 weeks</span>
+        <span class="tool-tag">Apr–May</span>
+      </div>
+      <div class="tool-desc">Hourly schedule from Mar 29 – May 2. Click blocks to mark complete. Covers all fixed events, school runs, VA appointments, Taekwondo, and study blocks.</div>
+      <div class="tool-meta">
+        <div class="tool-stats">
+          <div class="tool-stat"><span id="sch-done">—</span>Tasks done</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="tool-card tracker" href="training-tracker.html">
+      <div class="tool-num">02</div>
+      <div class="tool-title">Training Tracker</div>
+      <div class="tool-tags">
+        <span class="tool-tag">31 weeks</span>
+        <span class="tool-tag">GCP</span>
+        <span class="tool-tag">Terraform</span>
+        <span class="tool-tag">Git</span>
+        <span class="tool-tag">WGU</span>
+      </div>
+      <div class="tool-desc">Long-game tracker for all 7 phases: Git, Terraform, GCP, WGU Python, WGU Capstone, Palantir ATF, and Anduril prep. Set your start date and track weekly completions.</div>
+      <div class="tool-meta">
+        <div class="tool-stats">
+          <div class="tool-stat"><span id="tr-done">—</span>Weeks done</div>
+          <div class="tool-stat"><span id="tr-left">—</span>Weeks left</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="tool-card palantir" href="palantir-study-guide.html">
+      <div class="tool-num">03</div>
+      <div class="tool-title">Palantir ATF Guide</div>
+      <div class="tool-tags">
+        <span class="tool-tag">6 weeks</span>
+        <span class="tool-tag">~42 hrs</span>
+        <span class="tool-tag">Apr 28 start</span>
+      </div>
+      <div class="tool-desc">Six-week prep guide for the American Tech Fellowship. Data analytics fundamentals, pandas, SQL joins & aggregation, OOP, clean code, and end-to-end analysis project.</div>
+      <div class="tool-meta">
+        <div class="tool-stats">
+          <div class="tool-stat"><span id="pal-done">—</span>Weeks done</div>
+        </div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+
+
+  </div>
+
+  <footer>
+    <span>cp-training-hub · Firebase synced</span>
+    <span>Last updated: <span id="last-updated">—</span></span>
+  </footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDjfRzuRxxoxtRJdQzklKq0l-zrFeQ19GI",
+  authDomain: "cp-training-hub.firebaseapp.com",
+  projectId: "cp-training-hub",
+  storageBucket: "cp-training-hub.firebasestorage.app",
+  messagingSenderId: "665937146753",
+  appId: "1:665937146753:web:f8b48ffe1ab76fc76aae80"
+};
+
+const app = initializeApp(firebaseConfig, "index");
+const db = getFirestore(app);
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('sdot');
+  const txt = document.getElementById('stxt');
+  dot.className = 'sdot ' + s;
+  txt.textContent = { synced:'All tools synced', syncing:'Loading...', error:'Offline' }[s] || s;
+}
+
+function setVal(id, v) { const el = document.getElementById(id); if(el) el.textContent = v; }
+
+let counts = { sch:0, tr:0, trLeft:0, pal:0, total:0, totalDone:0 };
+
+function updateOverall() {
+  if(counts.total > 0) {
+    const pct = Math.round(counts.totalDone / counts.total * 100);
+    document.getElementById('ob-fill').style.width = pct + '%';
+    setVal('ob-pct', pct + '%');
+  }
+  document.getElementById('last-updated').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+// Schedule
+onSnapshot(doc(db, "progress", "schedule"), (snap) => {
+  const data = snap.exists() ? snap.data() : {};
+  const done = Object.values(data).filter(v => v === true).length;
+  setVal('sch-done', done);
+  counts.sch = done; counts.totalDone = counts.sch + counts.tr + counts.pal;
+  counts.total = 150; // approximate total
+  updateOverall();
+  setSyncStatus('synced');
+});
+
+// Tracker
+onSnapshot(doc(db, "progress", "tracker"), (snap) => {
+  const data = snap.exists() ? snap.data() : {};
+  const weeks = data.weeks || {};
+  const done = Object.values(weeks).filter(w => w?.done).length;
+  const left = 31 - done;
+  setVal('tr-done', done); setVal('tr-left', left);
+  counts.tr = done; counts.trLeft = left;
+  counts.totalDone = counts.sch + counts.tr + counts.pal;
+  updateOverall();
+});
+
+// Palantir
+onSnapshot(doc(db, "progress", "palantir"), (snap) => {
+  const data = snap.exists() ? snap.data() : {};
+  const done = (data.done || []).length;
+  setVal('pal-done', done);
+  counts.pal = done;
+  counts.totalDone = counts.sch + counts.tr + counts.pal;
+  updateOverall();
+});
+
+setSyncStatus('syncing');
+</script>
+</body>
+</html>
